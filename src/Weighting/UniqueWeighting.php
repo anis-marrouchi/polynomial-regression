@@ -1,12 +1,12 @@
 <?php
-/*=========================================================================*/
-/* Name: LinearWeighting.php                                               */
-/* Uses: Weighting mechanism for using the index times a slope.            */
+
+/* ========================================================================= */
+/* Name: UniqueWeighting.php                                               */
+/* Uses: Weighting mechanism for using a unique value for each index.      */
 /* Date: 2015/02/10                                                        */
 /* Author: Andrew Que (http://www.DrQue.net/)                              */
 /* Revisions:                                                              */
 /*  1.0 - 2015/02/10 - QUE - Creation.                                     */
-/*  1.0.1 - 2015/02/17 - QUE - Bug fix.                                    */
 /*                                                                         */
 /* This project is maintained at:                                          */
 /*    http://PolynomialRegression.drque.net/                               */
@@ -33,60 +33,61 @@
 /*                                                                         */
 /*                           (C) Copyright 2015                            */
 /*                               Andrew Que                                */
-/*=========================================================================*/
-require_once( 'RootDirectory.inc.php' );
-require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegression.php' );
+/* ========================================================================= */
+
+namespace Marrouchi\Weighting;
+
+use Marrouchi\Weighting\WeightingInterface;
 
 /**
- * This class will weight the terms in a linear manner.  The slope can be
- * positive or negative thereby placing more emphasis on the last/first terms
- * respectively.   A slope of 0 has no effect and all terms are weighted
- * equally.
+ * This class will weight regression input on a term-by-term basis.  Typically
+ * this would be done using a table of weighting terms with one term for each
+ * data point.
  *
- * NOTE: Does not use BC math which should not be a problem.
+ * <pre>
+ * $regression = new PolynomialRegression( $numberOfCoefficients );
+ * $weighting = new UniqueWeighting();
+ * // ...
+ * foreach ( $data as $dataPoint )
+ * {
+ *   $weighting->setWeight( $dataPoint[ "weight" ] );
+ *   $regression->addData( $dataPoint[ "x" ], $dataPoint[ "y" ] );
+ * }
+ * </pre>
  *
  * @package Weighting
  * @author Andrew Que
  * @link http://PolynomialRegression.drque.net/ Project home page.
  * @copyright Copyright (c) 2015, Andrew Que
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
- * @version 1.0.1
+ * @version 1.0
  */
-class LinearWeighting implements WeightingInterface
-{
-  /**
-   * @ignore
-   */
-  private $slope;
+class UniqueWeighting implements WeightingInterface {
 
-  /**
-   * Constructor.
-   *
-   * Initialize class with the specified weighting slope term.
-   * @param float $power The slope for the index.
-   */
-  public function __construct( $slope )
-  {
-    $this->slope = $slope;
-  }
+    /**
+     * @ignore
+     */
+    private $weight;
 
-  /**
-   * Get weight for specific index.
-   *
-   * Returns $index * $slope.
-   * @param int $index The index to get weighting.
-   */
-  public function getWeight( $index )
-  {
-    $result = 1;
-    if ( $this->slope > 0 )
-      $result = $this->slope * $index;
-    else
-    if ( $this->slope < 0 )
-      $result = -$this->slope / $index;
+    /**
+     * Set the weight for the next index.
+     *
+     * Should be called directly before adding data with the weight for the next term.
+     * @param float $weight Weight to use for next term.
+     */
+    public function setWeight($weight) {
+        $this->weight = $weight;
+    }
 
-    return $result;
-  }
+    /**
+     * Get weight for specific index.
+     *
+     * Returns the last weight entered.
+     * @param int $index The index to get weighting (ignored).
+     */
+    public function getWeight($index) {
+        return $this->weight;
+    }
+
 }
 
-?>

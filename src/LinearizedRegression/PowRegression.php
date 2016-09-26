@@ -1,11 +1,12 @@
 <?php
-/*=========================================================================*/
-/* Name: ExpRegression.php                                                 */
-/* Uses: Calculates and returns coefficients for a * exp( x * b ).         */
+
+/* ========================================================================= */
+/* Name: PowRegression.php                                                 */
+/* Uses: Calculates and returns coefficients for a * x^b.                  */
 /* Date: 2015/02/07                                                        */
 /* Author: Andrew Que (http://www.DrQue.net/)                              */
 /* Revisions:                                                              */
-/*  0.9ß - 2015/02/07 - QUE - Creation.                                    */
+/*  0.9(c) - 2015/02/07 - QUE - Creation.                                    */
 /*                                                                         */
 /* This project is maintained at:                                          */
 /*    http://PolynomialRegression.drque.net/                               */
@@ -32,9 +33,11 @@
 /*                                                                         */
 /*                           (C) Copyright 2015                            */
 /*                               Andrew Que                                */
-/*=========================================================================*/
-require_once( 'RootDirectory.inc.php' );
-require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegression.php' );
+/* ========================================================================= */
+
+namespace Marrouchi\LinearizedRegression;
+
+use Marrouchi\PolynomialRegression\PolynomialRegression;
 
 /**
  * Used for calculating least-square coefficients for data conforming to the function:
@@ -46,7 +49,7 @@ require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegressi
  * Quick example:
  *
  * <pre>
- * $regression = new ExpRegression();
+ * $regression = new PowRegression();
  * // ...
  * $regression->addData( $x, $y );
  * // ...
@@ -62,67 +65,62 @@ require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegressi
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @version 0.9b
  */
-class ExpRegression extends PolynomialRegression
-{
-  /**
-   * Constructor
-   *
-   * Create new class.
-   */
-  public function __construct()
-  {
-    parent::__construct( 2 );
-  }
+class PowRegression extends PolynomialRegression {
 
-  /**
-   * Add data.
-   *
-   * Add a data point to calculation.
-   * @param float $x Some real value.
-   * @param float $y Some real value corresponding to $x.
-   */
-  public function addData( $x, $y )
-  {
-    // Take the natural log of y before adding this data.
-    $y = log( $y );
+    /**
+     * Constructor
+     *
+     * Create new class.
+     */
+    public function __construct() {
+        parent::__construct(2);
+    }
 
-    parent::addData( $x, $y );
-  }
+    /**
+     * Add data.
+     *
+     * Add a data point to calculation.
+     * @param float $x Some real value.
+     * @param float $y Some real value corresponding to $x.
+     */
+    public function addData($x, $y) {
+        //list( $x, $y ) = $this->weightData( $x, $y );
+        // Take the natural log of x and y before adding this data.
+        $x = log($x);
+        $y = log($y);
 
-  /**
-   * Get coefficients.
-   *
-   * Calculate and return coefficients based on current data.
-   * @param int $numberOfCoefficient Ignored.
-   * @return array Array of coefficients (as BC strings).
-   */
-  public function getCoefficients( $numberOfCoefficient = -1 )
-  {
-    $result = parent::getCoefficients( 2 );
-    $result[ 0 ] = exp( $result[ 0 ] );
+        parent::addData($x, $y);
+    }
 
-    return $result;
-  }
+    /**
+     * Get coefficients.
+     *
+     * Calculate and return coefficients based on current data.
+     * @param int $numberOfCoefficient Ignored.
+     * @return array Array of coefficients (as BC strings).
+     */
+    public function getCoefficients($numberOfCoefficient = -1) {
+        $result = parent::getCoefficients(2);
+        $result[0] = exp($result[0]);
 
-  /**
-   * Interpolate
-   *
-   * Return y point for given x and coefficient set.  Function is static as it
-   * does not require any instance data to operate.
-   * @param array $coefficients Coefficients as calculated by 'getCoefficients'.
-   * @param float $x X-coordinate from which to calculate Y.
-   * @return float Y-coordinate (as floating-point).
-   */
-  static public function interpolate( $coefficients, $x )
-  {
-      $y = $coefficients[ 0 ] * exp( $x * $coefficients[ 1 ] );
+        return $result;
+    }
 
-      return $y;
-  }
+    /**
+     * Interpolate
+     *
+     * Return y point for given x and coefficient set.  Function is static as it
+     * does not require any instance data to operate.
+     * @param array $coefficients Coefficients as calculated by 'getCoefficients'.
+     * @param float $x X-coordinate from which to calculate Y.
+     * @return float Y-coordinate (as floating-point).
+     */
+    static public function interpolate($coefficients, $x) {
+        $y = $coefficients[0] * pow($x, $coefficients[1]);
+
+        return $y;
+    }
 
 }
 
-// "Mathematicians stand on each other's shoulders." -- Carl Friedrich Gauss
-
-
-?>
+// "[Sire,] je n'ai pas eu besoin de cette hypothese." -- Pierre-Simon Laplace

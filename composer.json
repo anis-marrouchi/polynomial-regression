@@ -1,0 +1,23 @@
+{
+    "name": "marrouchi/polynomial-regression",
+    "license": "MIT",
+    "type": "library",
+    "description": "DeQue Polynomial Regression is a PHP library created by Andrew Que. Adapted to use autoloading.",
+    "keywords": ["polynomial regression", "trendline", " least-square fitting"],
+    "homepage": "https://github.com/anis-marrouchi/polynomial-regression",
+    "authors": [
+        {
+            "name": "Anis Marrouchi",
+            "email": "anismarrouchi@hotmail.com",
+            "homepage": "https://www.twittstrap.com/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Marrouchi\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=5.0"
+    }
+}

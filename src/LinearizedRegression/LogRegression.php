@@ -1,11 +1,12 @@
 <?php
-/*=========================================================================*/
-/* Name: PowRegression.php                                                 */
-/* Uses: Calculates and returns coefficients for a * x^b.                  */
+
+/* ========================================================================= */
+/* Name: LogRegression.php                                                 */
+/* Uses: Calculates and returns coefficients for a * ln x + b.             */
 /* Date: 2015/02/07                                                        */
 /* Author: Andrew Que (http://www.DrQue.net/)                              */
 /* Revisions:                                                              */
-/*  0.9ß - 2015/02/07 - QUE - Creation.                                    */
+/*  0.9(c) - 2015/02/07 - QUE - Creation.                                    */
 /*                                                                         */
 /* This project is maintained at:                                          */
 /*    http://PolynomialRegression.drque.net/                               */
@@ -32,13 +33,21 @@
 /*                                                                         */
 /*                           (C) Copyright 2015                            */
 /*                               Andrew Que                                */
-/*=========================================================================*/
-require_once( 'RootDirectory.inc.php' );
-require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegression.php' );
+/* ========================================================================= */
+
+namespace Marrouchi\LinearizedRegression;
+
+use Marrouchi\PolynomialRegression\PolynomialRegression;
 
 /**
  * Used for calculating least-square coefficients for data conforming to the function:
- *    y = a * exp( b * x )
+ *   Typical form:
+ *     y = a * ln x + b
+ *   Expanded form:
+ *     y = c_0 + c_1 ln x + c_2 ln^2 x + ... + c_n ln^n x
+ *
+ * As of this implementation it is unknown if the expanded form has any practical use,
+ * but it is theoretically functional.
  *
  * Note: Although this function overloads the polynomial regression class, the log and
  * exponential function are not done using BC math and therefor do not have the accuracy.
@@ -46,7 +55,7 @@ require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegressi
  * Quick example:
  *
  * <pre>
- * $regression = new PowRegression();
+ * $regression = new LogRegression();
  * // ...
  * $regression->addData( $x, $y );
  * // ...
@@ -62,68 +71,50 @@ require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegressi
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @version 0.9b
  */
-class PowRegression extends PolynomialRegression
-{
-  /**
-   * Constructor
-   *
-   * Create new class.
-   */
-  public function __construct()
-  {
-    parent::__construct( 2 );
-  }
+class LogRegression extends PolynomialRegression {
 
-  /**
-   * Add data.
-   *
-   * Add a data point to calculation.
-   * @param float $x Some real value.
-   * @param float $y Some real value corresponding to $x.
-   */
-  public function addData( $x, $y )
-  {
-    //list( $x, $y ) = $this->weightData( $x, $y );
+    /**
+     * Constructor
+     *
+     * Create new class.
+     * @param int $coefficients Number of coefficients (default is 2).
+     */
+    public function __construct($coefficients = 2) {
+        assert($coefficients >= 2);
+        parent::__construct($coefficients);
+    }
 
-    // Take the natural log of x and y before adding this data.
-    $x = log( $x );
-    $y = log( $y );
+    /**
+     * Add data.
+     *
+     * Add a data point to calculation.
+     * @param float $x Some real value.
+     * @param float $y Some real value corresponding to $x.
+     */
+    public function addData($x, $y) {
+        // Take the natural log of x before adding this data.
+        $x = log($x);
 
-    parent::addData( $x, $y );
-  }
+        parent::addData($x, $y);
+    }
 
-  /**
-   * Get coefficients.
-   *
-   * Calculate and return coefficients based on current data.
-   * @param int $numberOfCoefficient Ignored.
-   * @return array Array of coefficients (as BC strings).
-   */
-  public function getCoefficients( $numberOfCoefficient = -1 )
-  {
-    $result = parent::getCoefficients( 2 );
-    $result[ 0 ] = exp( $result[ 0 ] );
+    /**
+     * Interpolate
+     *
+     * Return y point for given x and coefficient set.  Function is static as it
+     * does not require any instance data to operate.
+     * @param array $coefficients Coefficients as calculated by 'getCoefficients'.
+     * @param float $x X-coordinate from which to calculate Y.
+     * @return float Y-coordinate (as floating-point).
+     */
+    static public function interpolate($coefficients, $x) {
+        $y = $coefficients[1] * log($x) + $coefficients[0];
 
-    return $result;
-  }
-
-  /**
-   * Interpolate
-   *
-   * Return y point for given x and coefficient set.  Function is static as it
-   * does not require any instance data to operate.
-   * @param array $coefficients Coefficients as calculated by 'getCoefficients'.
-   * @param float $x X-coordinate from which to calculate Y.
-   * @return float Y-coordinate (as floating-point).
-   */
-  static public function interpolate( $coefficients, $x )
-  {
-      $y = $coefficients[ 0 ] * pow( $x, $coefficients[ 1 ] );
-
-      return $y;
-  }
+        return $y;
+    }
 
 }
 
-// "[Sire,] je n'ai pas eu besoin de cette hypothèse." -- Pierre-Simon Laplace
-?>
+// "There cannot be a language more universal and more simple, more free from
+// errors and obscurities...more worthy to express the invariable relations of
+// all natural things [than mathematics]." -- Joseph Fourier

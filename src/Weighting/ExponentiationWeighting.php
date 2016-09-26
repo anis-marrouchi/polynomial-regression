@@ -1,7 +1,8 @@
 <?php
-/*=========================================================================*/
-/* Name: UniqueWeighting.php                                               */
-/* Uses: Weighting mechanism for using a unique value for each index.      */
+
+/* ========================================================================= */
+/* Name: ExponentiationWeighting.php                                       */
+/* Uses: Weighting mechanism for using the index to a given power.         */
 /* Date: 2015/02/10                                                        */
 /* Author: Andrew Que (http://www.DrQue.net/)                              */
 /* Revisions:                                                              */
@@ -32,25 +33,21 @@
 /*                                                                         */
 /*                           (C) Copyright 2015                            */
 /*                               Andrew Que                                */
-/*=========================================================================*/
-require_once( 'RootDirectory.inc.php' );
-require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegression.php' );
+/* ========================================================================= */
+
+namespace Marrouchi\Weighting;
+
+use Marrouchi\Weighting\WeightingInterface;
 
 /**
- * This class will weight regression input on a term-by-term basis.  Typically
- * this would be done using a table of weighting terms with one term for each
- * data point.
+ * This class will weight the terms for the regression by raising the index of the term to
+ * a given power.  When the power term is positive this means those indices at the end will
+ * command more of the outcome than those at the beginning.  The reverse is true for negative
+ * powers.  A power of 0 has no effect and all terms are weighted equally.
  *
- * <pre>
- * $regression = new PolynomialRegression( $numberOfCoefficients );
- * $weighting = new UniqueWeighting();
- * // ...
- * foreach ( $data as $dataPoint )
- * {
- *   $weighting->setWeight( $dataPoint[ "weight" ] );
- *   $regression->addData( $dataPoint[ "x" ], $dataPoint[ "y" ] );
- * }
- * </pre>
+ * NOTE: Does not use BC math.  This is done so the weighting power can be fractional which
+ * is not supported by BC math.  Because BC math isn't use the useful range of this class is
+ * limited.
  *
  * @package Weighting
  * @author Andrew Que
@@ -59,34 +56,32 @@ require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegressi
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @version 1.0
  */
-class UniqueWeighting implements WeightingInterface
-{
-  /**
-   * @ignore
-   */
-  private $weight;
+class ExponentiationWeighting implements WeightingInterface {
 
-  /**
-   * Set the weight for the next index.
-   *
-   * Should be called directly before adding data with the weight for the next term.
-   * @param float $weight Weight to use for next term.
-   */
-  public function setWeight( $weight )
-  {
-    $this->weight = $weight;
-  }
+    /**
+     * @ignore
+     */
+    private $power;
 
-  /**
-   * Get weight for specific index.
-   *
-   * Returns the last weight entered.
-   * @param int $index The index to get weighting (ignored).
-   */
-  public function getWeight( $index )
-  {
-    return $this->weight;
-  }
+    /**
+     * Constructor.
+     *
+     * Initialize class with the specified weighting power term.
+     * @param float $power What power to raise the index.
+     */
+    public function __construct($power) {
+        $this->power = $power;
+    }
+
+    /**
+     * Get weight for specific index.
+     *
+     * Returns $index^$power.
+     * @param int $index The index to get weighting.
+     */
+    public function getWeight($index) {
+        return pow($index, $this->power);
+    }
+
 }
 
-?>

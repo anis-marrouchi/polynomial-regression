@@ -1,11 +1,13 @@
 <?php
-/*=========================================================================*/
-/* Name: ExponentiationWeighting.php                                       */
-/* Uses: Weighting mechanism for using the index to a given power.         */
+
+/* ========================================================================= */
+/* Name: LinearWeighting.php                                               */
+/* Uses: Weighting mechanism for using the index times a slope.            */
 /* Date: 2015/02/10                                                        */
 /* Author: Andrew Que (http://www.DrQue.net/)                              */
 /* Revisions:                                                              */
 /*  1.0 - 2015/02/10 - QUE - Creation.                                     */
+/*  1.0.1 - 2015/02/17 - QUE - Bug fix.                                    */
 /*                                                                         */
 /* This project is maintained at:                                          */
 /*    http://PolynomialRegression.drque.net/                               */
@@ -32,55 +34,59 @@
 /*                                                                         */
 /*                           (C) Copyright 2015                            */
 /*                               Andrew Que                                */
-/*=========================================================================*/
-require_once( 'RootDirectory.inc.php' );
-require_once( $RootDirectory . 'Includes/PolynomialRegression/PolynomialRegression.php' );
+/* ========================================================================= */
+
+namespace Marrouchi\Weighting;
+
+use Marrouchi\Weighting\WeightingInterface;
 
 /**
- * This class will weight the terms for the regression by raising the index of the term to
- * a given power.  When the power term is positive this means those indices at the end will
- * command more of the outcome than those at the beginning.  The reverse is true for negative
- * powers.  A power of 0 has no effect and all terms are weighted equally.
+ * This class will weight the terms in a linear manner.  The slope can be
+ * positive or negative thereby placing more emphasis on the last/first terms
+ * respectively.   A slope of 0 has no effect and all terms are weighted
+ * equally.
  *
- * NOTE: Does not use BC math.  This is done so the weighting power can be fractional which
- * is not supported by BC math.  Because BC math isn't use the useful range of this class is
- * limited.
+ * NOTE: Does not use BC math which should not be a problem.
  *
  * @package Weighting
  * @author Andrew Que
  * @link http://PolynomialRegression.drque.net/ Project home page.
  * @copyright Copyright (c) 2015, Andrew Que
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
- * @version 1.0
+ * @version 1.0.1
  */
-class ExponentiationWeighting implements WeightingInterface
-{
-  /**
-   * @ignore
-   */
-  private $power;
+class LinearWeighting implements WeightingInterface {
 
-  /**
-   * Constructor.
-   *
-   * Initialize class with the specified weighting power term.
-   * @param float $power What power to raise the index.
-   */
-  public function __construct( $power )
-  {
-    $this->power = $power;
-  }
+    /**
+     * @ignore
+     */
+    private $slope;
 
-  /**
-   * Get weight for specific index.
-   *
-   * Returns $index^$power.
-   * @param int $index The index to get weighting.
-   */
-  public function getWeight( $index )
-  {
-    return pow( $index, $this->power );
-  }
+    /**
+     * Constructor.
+     *
+     * Initialize class with the specified weighting slope term.
+     * @param float $power The slope for the index.
+     */
+    public function __construct($slope) {
+        $this->slope = $slope;
+    }
+
+    /**
+     * Get weight for specific index.
+     *
+     * Returns $index * $slope.
+     * @param int $index The index to get weighting.
+     */
+    public function getWeight($index) {
+        $result = 1;
+        if ($this->slope > 0)
+            $result = $this->slope * $index;
+        else
+        if ($this->slope < 0)
+            $result = -$this->slope / $index;
+
+        return $result;
+    }
+
 }
-
-?>
