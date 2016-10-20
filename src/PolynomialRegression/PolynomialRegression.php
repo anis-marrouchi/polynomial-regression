@@ -102,6 +102,8 @@
 
 namespace Marrouchi\PolynomialRegression;
 
+use Marrouchi\Weighting\WeightingInterface;
+
 class PolynomialRegression {
 
     /** @internal Array of running sum of x^n. */
